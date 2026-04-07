@@ -3,8 +3,8 @@ services:
     name: suburbrank
     runtime: python
     plan: free
-    buildCommand: pip install --break-system-packages -r suburbrank/app/requirements.txt
-    startCommand: PYTHONPATH=/opt/render/project/src python -m uvicorn suburbrank.app.main:app --host 0.0.0.0 --port $PORT
+    buildCommand: pip install -r app/requirements.txt
+    startCommand: PYTHONPATH=/opt/render/project/src python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
         value: 3.13.5

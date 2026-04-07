@@ -5,7 +5,7 @@ SuburbRank is now a functioning Python MVP skeleton with generated data, suburb 
 
 ## How to run
 ```bash
-PYTHONPATH=/data/.openclaw/workspace python3 -m uvicorn suburbrank.app.main:app --host 127.0.0.1 --port 8001
+PYTHONPATH=/data/.openclaw/workspace/suburbrank python3 -m uvicorn app.main:app --host 127.0.0.1 --port 8001
 ```
 
 ## Current product experience

@@ -4,9 +4,9 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
-from suburbrank.app.database import SessionLocal
-from suburbrank.app.fake_data import seed_database
-from suburbrank.app.models import MetricSnapshot, ScoringRun, Suburb, SuburbScore, WeeklyReport
+from app.database import SessionLocal
+from app.fake_data import seed_database
+from app.models import MetricSnapshot, ScoringRun, Suburb, SuburbScore, WeeklyReport
 
 app = FastAPI(title="SuburbRank")
 

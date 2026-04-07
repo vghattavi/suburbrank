@@ -3,6 +3,8 @@
 Repo:
 https://github.com/vghattavi/suburbrank
 
+Note: Render should use `app/requirements.txt` and `app.main:app`.
+
 ## Push from a terminal in the project directory
 ```bash
 cd /data/.openclaw/workspace/suburbrank

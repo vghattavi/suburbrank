@@ -35,12 +35,12 @@ In Render:
 
 ### Build Command
 ```bash
-pip install --break-system-packages -r suburbrank/app/requirements.txt
+pip install -r app/requirements.txt
 ```
 
 ### Start Command
 ```bash
-PYTHONPATH=/opt/render/project/src python -m uvicorn suburbrank.app.main:app --host 0.0.0.0 --port $PORT
+PYTHONPATH=/opt/render/project/src python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT
 ```
 
 ## 4. Environment variables

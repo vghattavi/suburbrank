@@ -57,8 +57,8 @@ Deploy to Azure App Service or container.
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r suburbrank/app/requirements.txt
-uvicorn suburbrank.app.main:app --reload --host 0.0.0.0 --port 8000
+pip install -r app/requirements.txt
+PYTHONPATH=. uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ## Deploy direction
