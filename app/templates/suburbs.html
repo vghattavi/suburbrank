@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <span class="eyebrow">Ranked suburbs</span>
+    <h1>NSW suburb rankings</h1>
+    <div class="table-wrap card">
+      <table class="suburb-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Suburb</th>
+            <th>Score</th>
+            <th>Summary</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in suburbs %}
+          <tr>
+            <td>#{{ item.rank }}</td>
+            <td><a href="/app/suburbs/{{ item.suburb_id }}">{{ item.name }}</a></td>
+            <td>{{ item.total_score }}</td>
+            <td>{{ item.summary_line }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}

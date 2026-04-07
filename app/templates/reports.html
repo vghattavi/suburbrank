@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <span class="eyebrow">Weekly reports</span>
+    <h1>Reports library</h1>
+    <div class="stack">
+      {% for report in reports %}
+      <div class="card">
+        <h3><a href="/app/reports/{{ report.slug }}">{{ report.title }}</a></h3>
+        <p>{{ report.summary }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

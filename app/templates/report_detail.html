@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section">
+  <div class="container narrow">
+    <span class="eyebrow">Weekly report</span>
+    <h1>{{ report.title }}</h1>
+    <div class="card stack">
+      <p>{{ report.summary }}</p>
+      <div>
+        <h3>Top ranked suburbs</h3>
+        <ol>
+          {% for item in top_suburbs %}
+          <li><strong>{{ item.name }}</strong> — score {{ item.total_score }} — {{ item.summary_line }}</li>
+          {% endfor %}
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

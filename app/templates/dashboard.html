@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <span class="eyebrow">Dashboard</span>
+    <h1>Latest suburb rankings</h1>
+    <div class="stack">
+      {% for suburb in top_suburbs %}
+      <div class="card suburb-card">
+        <div class="suburb-row">
+          <div>
+            <div class="rank">#{{ suburb.rank }}</div>
+            <h3>{{ suburb.name }}</h3>
+            <p>{{ suburb.summary }}</p>
+          </div>
+          <div class="score-pill">{{ suburb.score }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

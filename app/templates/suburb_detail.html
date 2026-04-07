@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section">
+  <div class="container narrow">
+    <span class="eyebrow">Suburb profile</span>
+    <h1>{{ suburb.name }}</h1>
+    <div class="card stack">
+      <div class="suburb-row">
+        <div>
+          <h3>Score</h3>
+          <p>{{ score.total_score }} / 100</p>
+        </div>
+        <div>
+          <h3>Rank</h3>
+          <p>#{{ score.rank }}</p>
+        </div>
+      </div>
+      <div>
+        <h3>Summary</h3>
+        <p>{{ score.summary_line }}</p>
+      </div>
+      <div>
+        <h3>Explanation</h3>
+        <p>{{ score.explanation }}</p>
+      </div>
+      <div>
+        <h3>Metrics</h3>
+        <ul>
+          <li>Population growth: {{ snapshot.population_growth }}%</li>
+          <li>Median price: ${{ "{:,}".format(snapshot.median_price|int) }}</li>
+          <li>12m price growth: {{ snapshot.price_growth_12m }}%</li>
+          <li>Rental yield: {{ snapshot.rental_yield }}%</li>
+          <li>Vacancy rate: {{ snapshot.vacancy_rate }}%</li>
+          <li>Listings trend: {{ snapshot.listings_trend }}%</li>
+          <li>Days on market: {{ snapshot.days_on_market }}</li>
+          <li>Infrastructure score: {{ snapshot.infrastructure_score }}/5</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
