@@ -8,7 +8,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from app.auth import hash_password, verify_password
 from app.config import settings
-from app.database import SessionLocal
+from app.database import Base, SessionLocal, engine
 from app.fake_data import seed_database
 from app.models import MetricSnapshot, ScoringRun, Suburb, SuburbScore, User, WeeklyReport
 
@@ -21,6 +21,7 @@ templates = Jinja2Templates(directory="app/templates")
 
 @app.on_event("startup")
 def startup_event():
+    Base.metadata.create_all(bind=engine)
     seed_database()
 
 
