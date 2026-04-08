@@ -104,6 +104,13 @@ async def signup(request: Request, email: str = Form(...), password: str = Form(
                 {"error": "Password must be at least 8 characters.", "email": normalized_email},
                 status_code=400,
             )
+        if len(password.encode("utf-8")) > 72:
+            return render_template(
+                request,
+                "signup.html",
+                {"error": "Password is too long.", "email": normalized_email},
+                status_code=400,
+            )
         user = User(email=normalized_email, password_hash=hash_password(password))
         db.add(user)
         db.commit()
