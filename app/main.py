@@ -57,31 +57,56 @@ async def dashboard(request: Request):
     db = db_session()
     try:
         latest_run = db.query(ScoringRun).order_by(ScoringRun.run_date.desc()).first()
-        top_scores = []
+        report = None
+        dashboard_rows = []
+        top_suburb = None
+
         if latest_run:
+            report = (
+                db.query(WeeklyReport)
+                .filter(WeeklyReport.scoring_run_id == latest_run.id, WeeklyReport.is_published == True)
+                .order_by(WeeklyReport.published_at.desc())
+                .first()
+            )
             score_rows = (
-                db.query(SuburbScore, Suburb)
+                db.query(SuburbScore, Suburb, MetricSnapshot)
                 .join(Suburb, Suburb.id == SuburbScore.suburb_id)
+                .join(MetricSnapshot, MetricSnapshot.suburb_id == Suburb.id)
                 .filter(SuburbScore.scoring_run_id == latest_run.id)
                 .order_by(SuburbScore.rank.asc())
-                .limit(10)
                 .all()
             )
-            top_scores = [
+            dashboard_rows = [
                 {
+                    "suburb_id": suburb.id,
                     "rank": score.rank,
                     "name": suburb.name,
-                    "score": round(score.total_score),
+                    "postcode": suburb.postcode,
+                    "score": round(score.total_score, 1),
+                    "demand_supply": round(snapshot.demand_pressure * 7, 1),
+                    "rental": round(snapshot.rental_yield * 14, 1),
+                    "infrastructure": round(snapshot.infrastructure_score * 17.5, 1),
+                    "income": round(snapshot.price_growth_12m * 7, 1),
+                    "population": round(snapshot.population_growth * 16, 1),
+                    "median_price": round(snapshot.median_price),
+                    "yield_percent": round(snapshot.rental_yield, 2),
+                    "vacancy_percent": round(snapshot.vacancy_rate, 2),
                     "summary": score.summary_line,
                 }
-                for score, suburb in score_rows
+                for score, suburb, snapshot in score_rows
             ]
+            if dashboard_rows:
+                top_suburb = dashboard_rows[0]
+
         return templates.TemplateResponse(
             request,
             "dashboard.html",
             {
                 "brand": "SuburbRank",
-                "top_suburbs": top_scores,
+                "table_rows": dashboard_rows,
+                "top_suburb": top_suburb,
+                "report": report,
+                "suburb_count": len(dashboard_rows),
             },
         )
     finally:

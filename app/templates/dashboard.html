@@ -1,22 +1,82 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="section">
-  <div class="container">
-    <span class="eyebrow">Dashboard</span>
-    <h1>Latest suburb rankings</h1>
-    <div class="stack">
-      {% for suburb in top_suburbs %}
-      <div class="card suburb-card">
-        <div class="suburb-row">
-          <div>
-            <div class="rank">#{{ suburb.rank }}</div>
-            <h3>{{ suburb.name }}</h3>
-            <p>{{ suburb.summary }}</p>
-          </div>
-          <div class="score-pill">{{ suburb.score }}</div>
-        </div>
+<section class="dashboard-shell">
+  <div class="dashboard-hero">
+    <div class="container">
+      <h1>NSW Suburb Scoring Engine</h1>
+      <p>Weekly undervalued suburb analysis</p>
+    </div>
+  </div>
+
+  <div class="container dashboard-page">
+    <div class="dashboard-summary-grid">
+      <div class="summary-card">
+        <div class="summary-value">{{ suburb_count }}</div>
+        <div class="summary-label">Suburbs Scored</div>
       </div>
-      {% endfor %}
+
+      <div class="summary-card">
+        {% if top_suburb %}
+        <div class="summary-title">{{ top_suburb.name }}</div>
+        <div class="summary-label">#{{ top_suburb.rank }} Suburb · Score: {{ top_suburb.score }}</div>
+        {% else %}
+        <div class="summary-title">No data yet</div>
+        <div class="summary-label">Run a scoring job to populate rankings</div>
+        {% endif %}
+      </div>
+
+      <div class="summary-card summary-card-action">
+        {% if report %}
+        <a class="report-button" href="/app/reports/{{ report.slug }}">⬇ Generate PDF Report</a>
+        <div class="summary-label">Top 10 weekly report</div>
+        {% else %}
+        <button class="report-button" type="button" disabled>⬇ Generate PDF Report</button>
+        <div class="summary-label">No published weekly report yet</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="dashboard-table-wrap">
+      <table class="dashboard-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Suburb</th>
+            <th>Postcode</th>
+            <th>Score ▼</th>
+            <th>D/S</th>
+            <th>Rental</th>
+            <th>Infra</th>
+            <th>Income</th>
+            <th>Pop</th>
+            <th>Median Price</th>
+            <th>Yield %</th>
+            <th>Vacancy %</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in table_rows %}
+          <tr class="{% if row.rank <= 10 %}is-top-10{% endif %}">
+            <td>{{ row.rank }}</td>
+            <td><a href="/app/suburbs/{{ row.suburb_id }}">{{ row.name }}</a></td>
+            <td>{{ row.postcode }}</td>
+            <td>
+              <span class="table-score-pill {% if row.score >= 60 %}score-high{% elif row.score >= 50 %}score-mid{% else %}score-low{% endif %}">
+                {{ row.score }}
+              </span>
+            </td>
+            <td>{{ row.demand_supply }}</td>
+            <td>{{ row.rental }}</td>
+            <td>{{ row.infrastructure }}</td>
+            <td>{{ row.income }}</td>
+            <td>{{ row.population }}</td>
+            <td>${{ "{:,}".format(row.median_price) }}</td>
+            <td>{{ row.yield_percent }}</td>
+            <td>{{ row.vacancy_percent }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
 </section>

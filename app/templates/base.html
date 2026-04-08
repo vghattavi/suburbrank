@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="/static/styles.css" />
 </head>
 <body>
+  {% if request.url.path != "/app/dashboard" %}
   <header class="site-header">
     <div class="container nav">
       <a href="/" class="logo">{{ brand }}</a>
@@ -19,6 +20,7 @@
       </nav>
     </div>
   </header>
+  {% endif %}
   <main>
     {% block content %}{% endblock %}
   </main>
