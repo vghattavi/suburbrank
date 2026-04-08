@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section auth-section">
+  <div class="container auth-container">
+    <div class="card auth-card">
+      <span class="eyebrow">Create your account</span>
+      <h1>Sign up by email</h1>
+      <p>Get access to suburb rankings, suburb profiles, and weekly investor reports.</p>
+
+      {% if error %}
+      <div class="form-alert">{{ error }}</div>
+      {% endif %}
+
+      <form method="post" action="/signup" class="auth-form stack">
+        <label>
+          <span>Email</span>
+          <input type="email" name="email" value="{{ email }}" placeholder="you@example.com" required />
+        </label>
+        <label>
+          <span>Password</span>
+          <input type="password" name="password" placeholder="At least 8 characters" minlength="8" required />
+        </label>
+        <button type="submit" class="button auth-submit">Create account</button>
+      </form>
+
+      <p class="microcopy">Already have an account? <a href="/login">Log in</a>.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}

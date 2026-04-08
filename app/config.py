@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import os
+import secrets
 
 
 @dataclass
@@ -11,6 +12,7 @@ class Settings:
     stripe_price_id: str = os.getenv("STRIPE_PRICE_ID", "")
     stripe_webhook_secret: str = os.getenv("STRIPE_WEBHOOK_SECRET", "")
     app_base_url: str = os.getenv("APP_BASE_URL", "http://localhost:8000")
+    session_secret: str = os.getenv("SESSION_SECRET", secrets.token_urlsafe(32))
 
 
 settings = Settings()

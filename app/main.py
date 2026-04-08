@@ -1,14 +1,18 @@
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Form, Request
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
+from starlette.middleware.sessions import SessionMiddleware
 
+from app.auth import hash_password, verify_password
+from app.config import settings
 from app.database import SessionLocal
 from app.fake_data import seed_database
-from app.models import MetricSnapshot, ScoringRun, Suburb, SuburbScore, WeeklyReport
+from app.models import MetricSnapshot, ScoringRun, Suburb, SuburbScore, User, WeeklyReport
 
 app = FastAPI(title="SuburbRank")
+app.add_middleware(SessionMiddleware, secret_key=settings.session_secret, same_site="lax")
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
@@ -23,13 +27,35 @@ def db_session() -> Session:
     return SessionLocal()
 
 
+def current_user(request: Request, db: Session):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return None
+    return db.query(User).filter(User.id == user_id, User.is_active == True).first()
+
+
+def render_template(request: Request, template_name: str, context: dict, status_code: int = 200):
+    db = db_session()
+    try:
+        user = current_user(request, db)
+    finally:
+        db.close()
+    full_context = {"brand": "SuburbRank", "current_user": user, **context}
+    return templates.TemplateResponse(request, template_name, full_context, status_code=status_code)
+
+
+def require_auth(request: Request):
+    if request.session.get("user_id"):
+        return None
+    return RedirectResponse(url="/login", status_code=303)
+
+
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    return templates.TemplateResponse(
+    return render_template(
         request,
         "home.html",
         {
-            "brand": "SuburbRank",
             "title": "Data-driven suburb rankings for Australian property investors",
         },
     )
@@ -37,11 +63,10 @@ async def home(request: Request):
 
 @app.get("/pricing", response_class=HTMLResponse)
 async def pricing(request: Request):
-    return templates.TemplateResponse(
+    return render_template(
         request,
         "pricing.html",
         {
-            "brand": "SuburbRank",
             "price": "$20/month",
         },
     )
@@ -49,11 +74,84 @@ async def pricing(request: Request):
 
 @app.get("/how-it-works", response_class=HTMLResponse)
 async def how_it_works(request: Request):
-    return templates.TemplateResponse(request, "how_it_works.html", {"brand": "SuburbRank"})
+    return render_template(request, "how_it_works.html", {})
+
+
+@app.get("/signup", response_class=HTMLResponse)
+async def signup_page(request: Request):
+    if request.session.get("user_id"):
+        return RedirectResponse(url="/app/dashboard", status_code=303)
+    return render_template(request, "signup.html", {"error": None, "email": ""})
+
+
+@app.post("/signup", response_class=HTMLResponse)
+async def signup(request: Request, email: str = Form(...), password: str = Form(...)):
+    normalized_email = email.strip().lower()
+    db = db_session()
+    try:
+        existing_user = db.query(User).filter(User.email == normalized_email).first()
+        if existing_user:
+            return render_template(
+                request,
+                "signup.html",
+                {"error": "That email is already registered.", "email": normalized_email},
+                status_code=400,
+            )
+        if len(password) < 8:
+            return render_template(
+                request,
+                "signup.html",
+                {"error": "Password must be at least 8 characters.", "email": normalized_email},
+                status_code=400,
+            )
+        user = User(email=normalized_email, password_hash=hash_password(password))
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        request.session["user_id"] = user.id
+        return RedirectResponse(url="/app/dashboard", status_code=303)
+    finally:
+        db.close()
+
+
+@app.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request):
+    if request.session.get("user_id"):
+        return RedirectResponse(url="/app/dashboard", status_code=303)
+    return render_template(request, "login.html", {"error": None, "email": ""})
+
+
+@app.post("/login", response_class=HTMLResponse)
+async def login(request: Request, email: str = Form(...), password: str = Form(...)):
+    normalized_email = email.strip().lower()
+    db = db_session()
+    try:
+        user = db.query(User).filter(User.email == normalized_email, User.is_active == True).first()
+        if not user or not verify_password(password, user.password_hash):
+            return render_template(
+                request,
+                "login.html",
+                {"error": "Invalid email or password.", "email": normalized_email},
+                status_code=400,
+            )
+        request.session["user_id"] = user.id
+        return RedirectResponse(url="/app/dashboard", status_code=303)
+    finally:
+        db.close()
+
+
+@app.post("/logout")
+async def logout(request: Request):
+    request.session.clear()
+    return RedirectResponse(url="/", status_code=303)
 
 
 @app.get("/app/dashboard", response_class=HTMLResponse)
 async def dashboard(request: Request):
+    auth_redirect = require_auth(request)
+    if auth_redirect:
+        return auth_redirect
+
     db = db_session()
     try:
         latest_run = db.query(ScoringRun).order_by(ScoringRun.run_date.desc()).first()
@@ -98,11 +196,10 @@ async def dashboard(request: Request):
             if dashboard_rows:
                 top_suburb = dashboard_rows[0]
 
-        return templates.TemplateResponse(
+        return render_template(
             request,
             "dashboard.html",
             {
-                "brand": "SuburbRank",
                 "table_rows": dashboard_rows,
                 "top_suburb": top_suburb,
                 "report": report,
@@ -115,6 +212,10 @@ async def dashboard(request: Request):
 
 @app.get("/app/suburbs", response_class=HTMLResponse)
 async def suburbs(request: Request):
+    auth_redirect = require_auth(request)
+    if auth_redirect:
+        return auth_redirect
+
     db = db_session()
     try:
         latest_run = db.query(ScoringRun).order_by(ScoringRun.run_date.desc()).first()
@@ -137,13 +238,17 @@ async def suburbs(request: Request):
             }
             for score, suburb in rows
         ]
-        return templates.TemplateResponse(request, "suburbs.html", {"brand": "SuburbRank", "suburbs": suburbs_view})
+        return render_template(request, "suburbs.html", {"suburbs": suburbs_view})
     finally:
         db.close()
 
 
 @app.get("/app/suburbs/{suburb_id}", response_class=HTMLResponse)
 async def suburb_detail(request: Request, suburb_id: int):
+    auth_redirect = require_auth(request)
+    if auth_redirect:
+        return auth_redirect
+
     db = db_session()
     try:
         suburb = db.query(Suburb).filter(Suburb.id == suburb_id).first()
@@ -156,10 +261,10 @@ async def suburb_detail(request: Request, suburb_id: int):
                 .filter(SuburbScore.suburb_id == suburb_id, SuburbScore.scoring_run_id == latest_run.id)
                 .first()
             )
-        return templates.TemplateResponse(
+        return render_template(
             request,
             "suburb_detail.html",
-            {"brand": "SuburbRank", "suburb": suburb, "snapshot": snapshot, "score": score},
+            {"suburb": suburb, "snapshot": snapshot, "score": score},
         )
     finally:
         db.close()
@@ -167,16 +272,24 @@ async def suburb_detail(request: Request, suburb_id: int):
 
 @app.get("/app/reports", response_class=HTMLResponse)
 async def reports(request: Request):
+    auth_redirect = require_auth(request)
+    if auth_redirect:
+        return auth_redirect
+
     db = db_session()
     try:
         reports = db.query(WeeklyReport).filter(WeeklyReport.is_published == True).order_by(WeeklyReport.published_at.desc()).all()
-        return templates.TemplateResponse(request, "reports.html", {"brand": "SuburbRank", "reports": reports})
+        return render_template(request, "reports.html", {"reports": reports})
     finally:
         db.close()
 
 
 @app.get("/app/reports/{slug}", response_class=HTMLResponse)
 async def report_detail(request: Request, slug: str):
+    auth_redirect = require_auth(request)
+    if auth_redirect:
+        return auth_redirect
+
     db = db_session()
     try:
         report = db.query(WeeklyReport).filter(WeeklyReport.slug == slug).first()
@@ -198,10 +311,10 @@ async def report_detail(request: Request, slug: str):
             }
             for score, suburb in top_rows
         ]
-        return templates.TemplateResponse(
+        return render_template(
             request,
             "report_detail.html",
-            {"brand": "SuburbRank", "report": report, "top_suburbs": top_suburbs},
+            {"report": report, "top_suburbs": top_suburbs},
         )
     finally:
         db.close()

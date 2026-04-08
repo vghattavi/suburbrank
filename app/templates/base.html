@@ -14,9 +14,17 @@
       <nav>
         <a href="/how-it-works">How it works</a>
         <a href="/pricing">Pricing</a>
+        {% if current_user %}
         <a href="/app/suburbs">Suburbs</a>
         <a href="/app/reports">Reports</a>
         <a href="/app/dashboard" class="button button-ghost">Dashboard</a>
+        <form action="/logout" method="post" class="inline-form">
+          <button type="submit" class="nav-link-button">Log out</button>
+        </form>
+        {% else %}
+        <a href="/login">Log in</a>
+        <a href="/signup" class="button button-ghost">Sign up</a>
+        {% endif %}
       </nav>
     </div>
   </header>
