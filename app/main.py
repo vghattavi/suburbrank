@@ -10,8 +10,8 @@ from app.models import MetricSnapshot, ScoringRun, Suburb, SuburbScore, WeeklyRe
 
 app = FastAPI(title="SuburbRank")
 
-app.mount("/static", StaticFiles(directory="suburbrank/app/static"), name="static")
-templates = Jinja2Templates(directory="suburbrank/app/templates")
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+templates = Jinja2Templates(directory="app/templates")
 
 
 @app.on_event("startup")
