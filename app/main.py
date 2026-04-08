@@ -2,6 +2,7 @@ from fastapi import FastAPI, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -113,7 +114,16 @@ async def signup(request: Request, email: str = Form(...), password: str = Form(
             )
         user = User(email=normalized_email, password_hash=hash_password(password))
         db.add(user)
-        db.commit()
+        try:
+            db.commit()
+        except SQLAlchemyError:
+            db.rollback()
+            return render_template(
+                request,
+                "signup.html",
+                {"error": "Signup is temporarily unavailable.", "email": normalized_email},
+                status_code=500,
+            )
         db.refresh(user)
         request.session["user_id"] = user.id
         return RedirectResponse(url="/app/dashboard", status_code=303)
