@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section page-hero">
+  <div class="container narrow">
+    <span class="eyebrow">Investor chat</span>
+    <h1>Get help without leaving the screen.</h1>
+    <p class="lead">Use on-screen chat to ask about suburb rankings, reports, platform features, or the next best step in your research flow.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="chat-shell card">
+      <div class="chat-thread stack">
+        <div class="chat-bubble chat-bubble-user">Which suburbs look strongest for growth and yield right now?</div>
+        <div class="chat-bubble">Based on the latest rankings, start with the top-scoring suburbs and compare yield, vacancy, and infrastructure strength before shortlisting.</div>
+        <div class="chat-bubble chat-bubble-user">Can you explain why one suburb outranks another?</div>
+        <div class="chat-bubble">Yes. The score reflects a blend of demand pressure, rental strength, growth signals, and supporting fundamentals, so you can see where momentum is most convincing.</div>
+      </div>
+      <form class="chat-input-row" action="#" method="get">
+        <input type="text" placeholder="Ask a question about a suburb, report, or ranking..." />
+        <button type="submit" class="button">Send</button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

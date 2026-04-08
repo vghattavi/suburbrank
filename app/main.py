@@ -65,7 +65,13 @@ async def pricing(request: Request):
     auth_redirect = require_auth(request)
     if auth_redirect:
         return auth_redirect
-    return RedirectResponse(url="/app/dashboard", status_code=303)
+    return render_template(
+        request,
+        "pricing.html",
+        {
+            "price": "$20/month",
+        },
+    )
 
 
 @app.get("/how-it-works", response_class=HTMLResponse)
@@ -73,7 +79,47 @@ async def how_it_works(request: Request):
     auth_redirect = require_auth(request)
     if auth_redirect:
         return auth_redirect
-    return RedirectResponse(url="/app/dashboard", status_code=303)
+    return render_template(request, "how_it_works.html", {})
+
+
+@app.get("/what-we-do", response_class=HTMLResponse)
+async def what_we_do(request: Request):
+    auth_redirect = require_auth(request)
+    if auth_redirect:
+        return auth_redirect
+    return render_template(request, "what_we_do.html", {})
+
+
+@app.get("/services", response_class=HTMLResponse)
+async def services(request: Request):
+    auth_redirect = require_auth(request)
+    if auth_redirect:
+        return auth_redirect
+    return render_template(request, "services.html", {})
+
+
+@app.get("/about", response_class=HTMLResponse)
+async def about(request: Request):
+    auth_redirect = require_auth(request)
+    if auth_redirect:
+        return auth_redirect
+    return render_template(request, "about.html", {})
+
+
+@app.get("/contact", response_class=HTMLResponse)
+async def contact(request: Request):
+    auth_redirect = require_auth(request)
+    if auth_redirect:
+        return auth_redirect
+    return render_template(request, "contact.html", {})
+
+
+@app.get("/app/chat", response_class=HTMLResponse)
+async def chat(request: Request):
+    auth_redirect = require_auth(request)
+    if auth_redirect:
+        return auth_redirect
+    return render_template(request, "chat.html", {})
 
 
 @app.get("/signup", response_class=HTMLResponse)
