@@ -54,29 +54,26 @@ def require_auth(request: Request):
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    return render_template(
-        request,
-        "home.html",
-        {
-            "title": "Data-driven suburb rankings for Australian property investors",
-        },
-    )
+    auth_redirect = require_auth(request)
+    if auth_redirect:
+        return RedirectResponse(url="/signup", status_code=303)
+    return RedirectResponse(url="/app/dashboard", status_code=303)
 
 
 @app.get("/pricing", response_class=HTMLResponse)
 async def pricing(request: Request):
-    return render_template(
-        request,
-        "pricing.html",
-        {
-            "price": "$20/month",
-        },
-    )
+    auth_redirect = require_auth(request)
+    if auth_redirect:
+        return auth_redirect
+    return RedirectResponse(url="/app/dashboard", status_code=303)
 
 
 @app.get("/how-it-works", response_class=HTMLResponse)
 async def how_it_works(request: Request):
-    return render_template(request, "how_it_works.html", {})
+    auth_redirect = require_auth(request)
+    if auth_redirect:
+        return auth_redirect
+    return RedirectResponse(url="/app/dashboard", status_code=303)
 
 
 @app.get("/signup", response_class=HTMLResponse)
